@@ -4,80 +4,92 @@ import React, { useEffect, useState, useRef } from 'react';
 import hiragana from '../../constants/normal/hiragana.json';
 import katakana from '../../constants/normal/katakana.json';
 import { motion, useAnimationControls } from 'framer-motion';
+import { QueueConstants } from '@/app/constants/queue-constants';
+import { GameConstants } from '@/app/constants/game-constants';
+import { Queue } from '@/lib/Queue';
+
 
 interface MatchingPair {
   kana: string;
   roumaji: string;
-  type: string;
+  type?: string;
 }
 
 interface GameStatePairs {
   leftColumn: string[];
   rightColumn: string[];
+  size: number;
 }
-
-type NextGameStatePairs = GameStatePairs & { pairLength: number; }
 
 
 const Game = () => {
   const [leftColumnSelection, setLeftColumnSelection] = useState<any>();
   const [rightColumnSelection, setRightColumnSelection] = useState<any>();
-  const [currentGameStatePairs, setCurrentGameStatePairs] = useState<GameStatePairs>({ leftColumn: [], rightColumn: [] });
-  const [nextGameStatePairs, setNextGameStatePairs] = useState<NextGameStatePairs>({ leftColumn: [], rightColumn: [], pairLength: 0 });
-  const [correctMatch, setCorrectMatch] = useState<boolean>();
+  const [currentGameStatePairs, setCurrentGameStatePairs] = useState<GameStatePairs>({ leftColumn: [], rightColumn: [], size: 0 });
+  const [nextGameStatePairs, setNextGameStatePairs] = useState<MatchingPair>();
   const [comboStreak, setComboStreak] = useState<number>(0);
   const leftColumnElements = useRef<(HTMLButtonElement | null)[]>([]);
   const rightColumnElements = useRef<(HTMLButtonElement | null)[]>([]);
-  const grayscaleControls = useAnimationControls();
+  const gamePairQueue = new Queue<MatchingPair>();
+
 
   const selectInitialRandomPairs = () => {
     let leftColumn = [];
     let rightColumn = [];
+    let size = 0;
 
-    for (let i = 0; i < 5; i++) {
-      let matchingPair: MatchingPair = hiragana[Math.floor(Math.random() * hiragana.length)];
+    for (let i = 0; i < GameConstants.MAX_ROWS_DISPLAYED; i++) {
+      const randomIndex = Math.floor(Math.random() * hiragana.length);
+      let matchingPair = hiragana[randomIndex];
 
-      while (currentGameStatePairs.leftColumn.includes(matchingPair.kana)) {
-        matchingPair = hiragana[Math.floor(Math.random() * hiragana.length)];
+      while (currentGameStatePairs.leftColumn.includes(matchingPair.kana)
+        && currentGameStatePairs.rightColumn.includes(matchingPair.roumaji)) {
+        matchingPair = hiragana[randomIndex];
       }
+
+      console.log('matchingPair: ', matchingPair)
 
       leftColumn.push(matchingPair.kana);
       rightColumn.push(matchingPair.roumaji);
+      size++;
     }
 
     leftColumn.sort((a: string, b: string) => 0.5 - Math.random());
     rightColumn.sort((a: string, b: string) => 0.5 - Math.random());
 
-    setCurrentGameStatePairs({ leftColumn, rightColumn });
+    setCurrentGameStatePairs({ leftColumn, rightColumn, size });
   }
 
-  const animateGrayscale = async () => {
-    while (true) {
-      // Grayscale from 0 to 100
-      await grayscaleControls.start({ filter: 'grayscale(100%)' });
-      // Delay for a short period
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      // Grayscale from 100 back to 0
-      await grayscaleControls.start({ filter: 'grayscale(0%)' });
-      // Delay for a short period before restarting the loop
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-  };
+  const enqueueNextRandomPairs = () => {
+    for (let i = 0; i < QueueConstants.MAX_QUEUE_SIZE; i++) {
+      // grab two pairings, swap in place, add to queue
+      const firstRandomIndex = Math.floor(Math.random() * hiragana.length);
+      const secondRandomIndex = Math.floor(Math.random() * hiragana.length);
+      let firstMatchingPair = hiragana[firstRandomIndex];
+      let secondMatchingPair = hiragana[secondRandomIndex];
 
-  const selectNextRandomPair = () => {
-    const newNextGameStatePairs: NextGameStatePairs = { leftColumn: [], rightColumn: [], pairLength: 0 }
-    for (let i = 0; i < 2; i++) {
-      let matchingPair = hiragana[Math.floor(Math.random() * hiragana.length)];
-
-      while (currentGameStatePairs.leftColumn.includes(matchingPair.kana)
-        && nextGameStatePairs.leftColumn.includes(matchingPair.kana)) {
-        matchingPair = hiragana[Math.floor(Math.random() * hiragana.length)];
+      while (currentGameStatePairs.leftColumn.includes(firstMatchingPair.kana)
+        && currentGameStatePairs.leftColumn.includes(secondMatchingPair.kana)
+        && (firstMatchingPair.kana === secondMatchingPair.kana)) {
+        firstMatchingPair = hiragana[firstRandomIndex];
+        secondMatchingPair = hiragana[secondRandomIndex];
       }
-      newNextGameStatePairs.leftColumn.push(matchingPair.kana);
-      newNextGameStatePairs.rightColumn.push(matchingPair.roumaji);
-      newNextGameStatePairs.pairLength++;
+      // swap the values around
+      const temporaryKana = firstMatchingPair['kana'];
+      firstMatchingPair['kana'] = secondMatchingPair['kana'];
+      secondMatchingPair['kana'] = temporaryKana;
+
+      console.log(firstMatchingPair.kana, firstMatchingPair.roumaji)
+      console.log(secondMatchingPair.kana, secondMatchingPair.roumaji)
+
+      console.log('firstMatchingPair' + JSON.stringify(firstMatchingPair, null, 2))
+      console.log('secondMatchingPair' + JSON.stringify(secondMatchingPair, null, 2))
+
+
+      gamePairQueue.enqueue(firstMatchingPair);
+      gamePairQueue.enqueue(secondMatchingPair);
     }
-    setNextGameStatePairs((prevNextGameStatePairs) => newNextGameStatePairs);
+    console.log(gamePairQueue.getQueue())
   }
 
   const onLeftColumnButtonClick = (index: number, kana: string) => {
@@ -93,12 +105,15 @@ const Game = () => {
   const updateGameStateWithMatchAttempt = () => {
     if (leftColumnSelection && rightColumnSelection) {
       const matchResult = hiragana.some((hiragana) => hiragana.kana === leftColumnSelection.selection && hiragana.roumaji === rightColumnSelection.selection);
-      setCorrectMatch(matchResult);
 
       if (matchResult) {
         setComboStreak((prevCombo) => prevCombo + 1)
         applyCorrectMatchStyles();
-        replaceMatchedPair();
+        setTimeout(() => {
+          replaceMatchedPair();
+          checkQueueSize();
+        }, 2000);
+
       } else {
         setComboStreak(0);
         applyIncorrectMatchStyles();
@@ -111,7 +126,7 @@ const Game = () => {
 
   const resetButtonStyles = (columnElementsRef: any) => {
     for (let key of Object.keys(columnElementsRef.current)) {
-      columnElementsRef.current[key].className = `hover:bg-gray-200 text-black font-bold py-2 px-4 border-2 border-b-4 border-gray-300 rounded-lg`
+      columnElementsRef.current[key].className = `hover:bg-gray-300 text-black font-bold py-2 px-4 border-2 border-b-4 border-gray-400 rounded-lg`
     }
   }
 
@@ -123,8 +138,8 @@ const Game = () => {
   const applyCorrectMatchStyles = () => {
     resetButtonStyles(leftColumnElements)
     resetButtonStyles(rightColumnElements);
-    leftColumnElements.current[leftColumnSelection.index]?.classList.add('border-green-500', 'text-green-500');
-    rightColumnElements.current[rightColumnSelection.index]?.classList.add('border-green-500', 'text-green-500');
+    leftColumnElements.current[leftColumnSelection.index]?.classList.add('border-green-500', 'text-green-500', 'transition-animation');
+    rightColumnElements.current[rightColumnSelection.index]?.classList.add('border-green-500', 'text-green-500', 'transition-animation');
   }
 
   const applyIncorrectMatchStyles = () => {
@@ -134,63 +149,48 @@ const Game = () => {
     rightColumnElements.current[rightColumnSelection.index]?.classList.add('border-red-500', 'text-red-500');
   }
 
-  const pickNextMismatchedPair = () => {
-    const randomIndex = Math.round(Math.random());
+  const replaceMatchedPair = () => {
+    const newGamePair = gamePairQueue.dequeue();
 
-    let newLeftElementToAdd;
-    let newRightElementToAdd;
+    if (newGamePair) {
+      const foundLeftColumnIndex = currentGameStatePairs.leftColumn.indexOf(leftColumnSelection.selection);
+      const foundRightColumnIndex = currentGameStatePairs.rightColumn.indexOf(rightColumnSelection.selection);
 
-    if (randomIndex === 0 && nextGameStatePairs.pairLength > 1) {
-      newLeftElementToAdd = nextGameStatePairs.leftColumn[0];
-      newRightElementToAdd = nextGameStatePairs.rightColumn[1];
-      nextGameStatePairs.leftColumn.splice(0, 1);
-      nextGameStatePairs.rightColumn.splice(1);
-      nextGameStatePairs.pairLength--;
-    } else if (randomIndex === 1 && nextGameStatePairs.pairLength > 1) {
-      newLeftElementToAdd = nextGameStatePairs.leftColumn[1];
-      newRightElementToAdd = nextGameStatePairs.rightColumn[0];
-      nextGameStatePairs.leftColumn.splice(1);
-      nextGameStatePairs.rightColumn.splice(0, 1);
-      nextGameStatePairs.pairLength--;
-    } else {
-      newLeftElementToAdd = nextGameStatePairs.leftColumn[0];
-      newRightElementToAdd = nextGameStatePairs.rightColumn[0];
-      nextGameStatePairs.leftColumn.splice(0);
-      nextGameStatePairs.rightColumn.splice(0);
-      nextGameStatePairs.pairLength--;
+      const newCurrentGameStatePairs = structuredClone(currentGameStatePairs)
+
+      console.log(newCurrentGameStatePairs)
+
+      newCurrentGameStatePairs.leftColumn[foundLeftColumnIndex] = newGamePair.kana;
+      newCurrentGameStatePairs.rightColumn[foundRightColumnIndex] = newGamePair.kana;
+
+      console.log(newCurrentGameStatePairs)
+
+      setCurrentGameStatePairs(newCurrentGameStatePairs);
+
     }
-
-    if (nextGameStatePairs.pairLength === 0) {
-      // Exhausted next game pair options. Generate new pairs
-      selectNextRandomPair();
-    }
-
-    return { newLeftElementToAdd, newRightElementToAdd}
   }
 
-  const replaceMatchedPair = () => {
-    const foundLeftColumnIndex = currentGameStatePairs.leftColumn.indexOf(leftColumnSelection.selection);
-    const foundRightColumnIndex = currentGameStatePairs.rightColumn.indexOf(rightColumnSelection.selection);
-
-    const { newLeftElementToAdd, newRightElementToAdd } = pickNextMismatchedPair();
-
-    const newCurrentGameStatePairs = structuredClone(currentGameStatePairs)
-
-    newCurrentGameStatePairs.leftColumn[foundLeftColumnIndex] = newLeftElementToAdd;
-    newCurrentGameStatePairs.rightColumn[foundRightColumnIndex] = newRightElementToAdd;
-
-    setCurrentGameStatePairs((prevCurrentGameStatePairs) => newCurrentGameStatePairs);
+  const checkQueueSize = () => {
+    if (gamePairQueue.size < 5) {
+      enqueueNextRandomPairs();
+    }
   }
 
   useEffect(() => {
-    setCurrentGameStatePairs({ leftColumn: [], rightColumn: [] });
+    gamePairQueue.clear();
+    setCurrentGameStatePairs({ leftColumn: [], rightColumn: [], size: 0 });
     selectInitialRandomPairs();
-    selectNextRandomPair();
+    enqueueNextRandomPairs();
+    checkQueueSize();
   }, []);
 
   useEffect(() => {
     updateGameStateWithMatchAttempt();
-  }, [leftColumnSelection, rightColumnSelection])
+  }, [leftColumnSelection, rightColumnSelection]);
+
+  useEffect(() => {
+
+  }, [nextGameStatePairs])
 
   return (
     <>
@@ -202,7 +202,7 @@ const Game = () => {
               ref={(element) => leftColumnElements.current[index] = element}
               onClick={() => onLeftColumnButtonClick(index, kana)}
               key={`${kana}-${index}`}
-              className={`hover:bg-gray-200 text-black font-bold py-2 px-4 border-2 border-b-4 border-gray-300 rounded-lg`}
+              className={`hover:bg-gray-300 text-black font-bold py-2 px-4 border-2 border-b-4 border-gray-400 rounded-lg`}
             >
               <input className="hidden" type="radio" name="leftColumn" />
               <label>{kana}</label>
@@ -215,7 +215,7 @@ const Game = () => {
               ref={(element) => rightColumnElements.current[index] = element}
               onClick={() => onRightColumnButtonClick(index, roumaji)}
               key={`${roumaji}-${index}`}
-              className={`hover:bg-gray-200 text-black font-bold py-2 px-4 border-2 border-b-4 border-gray-300 rounded-lg`}
+              className={`hover:bg-gray-300 text-black font-bold py-2 px-4 border-2 border-b-4 border-gray-400 rounded-lg`}
             >
               <input className="hidden" type="radio" name="rightColumn" />
               <label>{roumaji}</label>

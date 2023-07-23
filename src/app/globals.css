@@ -25,3 +25,15 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+.transition-animation {
+  animation: incoming-change 4s ease-in;
+  -webkit-animation: incoming-change 4s ease-in;
+}
+
+@keyframes incoming-change {
+    0% { color: rgb(34 197 94); border-color: rgb(34 197 94); }
+    50% { color: rgb(229 231 235); border-color: rgb(229 231 235); }
+    100%{ color: black; border-color: rgb(156 163 175); }
+}
+
