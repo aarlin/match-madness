@@ -8,6 +8,7 @@ import { QueueConstants } from '@/app/constants/queue-constants';
 import { GameConstants } from '@/app/constants/game-constants';
 import { Queue, useQueue } from '@/lib/Queue';
 import { delayedFunctionExecution } from '../utils/utils';
+import { defaultComposer } from 'default-composer';
 
 
 interface MatchingPair {
@@ -102,7 +103,7 @@ const Game = () => {
           replaceMatchedPair();
           checkQueueSize();
           console.log(gamePairQueue.getQueue())
-        }, 1000);
+        }, 800);
 
       } else {
         setComboStreak(0);
@@ -155,7 +156,9 @@ const Game = () => {
 
       console.log('newCurrentGameStatePairs' + JSON.stringify(newCurrentGameStatePairs, null, 2))
 
-      setCurrentGameStatePairs(newCurrentGameStatePairs);
+      console.log(defaultComposer(currentGameStatePairs, newCurrentGameStatePairs))
+
+      setCurrentGameStatePairs((prevGameStatePairs) => defaultComposer(prevGameStatePairs, newCurrentGameStatePairs));
 
     }
   }
