@@ -1,7 +1,13 @@
 import { createContext, useContext } from 'react'
 import { createStore, useStore as useZustandStore } from 'zustand'
 
+
+enum GameMode {
+  HIRAGANA = 'hiragana',
+  KATAKANA = 'katakana'
+}
 interface StoreInterface {
+  gameMode: GameMode,
   lastUpdate: number
   light: boolean
   count: number
@@ -12,6 +18,7 @@ interface StoreInterface {
 }
 
 const getDefaultInitialState = () => ({
+  gameMode: GameMode.HIRAGANA,
   lastUpdate: Date.now(),
   light: false,
   count: 0,
