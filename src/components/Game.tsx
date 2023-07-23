@@ -65,14 +65,14 @@ const Game = () => {
       // grab two pairings, swap in place, add to queue
       const firstRandomIndex = Math.floor(Math.random() * hiragana.length);
       const secondRandomIndex = Math.floor(Math.random() * hiragana.length);
-      let firstMatchingPair = hiragana[firstRandomIndex];
-      let secondMatchingPair = hiragana[secondRandomIndex];
+      let firstMatchingPair = { ...hiragana[firstRandomIndex]};
+      let secondMatchingPair = { ...hiragana[secondRandomIndex]};
 
       while (currentGameStatePairs.leftColumn.includes(firstMatchingPair.kana)
         && currentGameStatePairs.leftColumn.includes(secondMatchingPair.kana)
         && (firstMatchingPair.kana === secondMatchingPair.kana)) {
-        firstMatchingPair = hiragana[firstRandomIndex];
-        secondMatchingPair = hiragana[secondRandomIndex];
+        firstMatchingPair = {...hiragana[firstRandomIndex]};
+        secondMatchingPair = {...hiragana[secondRandomIndex]};
       }
       // swap the values around
       const temporaryKana = firstMatchingPair['kana'];
