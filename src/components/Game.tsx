@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import hiragana from '../../constants/normal/hiragana.json';
 import katakana from '../../constants/normal/katakana.json';
+import { motion, useAnimationControls } from 'framer-motion';
 
 interface MatchingPair {
   kana: string;
@@ -10,29 +11,74 @@ interface MatchingPair {
   type: string;
 }
 
+interface GameStatePairs {
+  leftColumn: string[];
+  rightColumn: string[];
+}
+
+type NextGameStatePairs = GameStatePairs & { pairLength: number; }
+
+
 const Game = () => {
   const [leftColumnSelection, setLeftColumnSelection] = useState<any>();
   const [rightColumnSelection, setRightColumnSelection] = useState<any>();
-  const [matchingPairs, setMatchingPairs] = useState<MatchingPair[]>([]);
+  const [currentGameStatePairs, setCurrentGameStatePairs] = useState<GameStatePairs>({ leftColumn: [], rightColumn: [] });
+  const [nextGameStatePairs, setNextGameStatePairs] = useState<NextGameStatePairs>({ leftColumn: [], rightColumn: [], pairLength: 0 });
   const [correctMatch, setCorrectMatch] = useState<boolean>();
   const [comboStreak, setComboStreak] = useState<number>(0);
   const leftColumnElements = useRef<(HTMLButtonElement | null)[]>([]);
   const rightColumnElements = useRef<(HTMLButtonElement | null)[]>([]);
+  const grayscaleControls = useAnimationControls();
 
-  const selectRandomPair = () => {
-    const matchingPair = hiragana[Math.floor(Math.random() * hiragana.length)];
-    setMatchingPairs((prevMatchingPairs) => [...prevMatchingPairs, matchingPair]);
+  const selectInitialRandomPairs = () => {
+    let leftColumn = [];
+    let rightColumn = [];
+
+    for (let i = 0; i < 5; i++) {
+      let matchingPair: MatchingPair = hiragana[Math.floor(Math.random() * hiragana.length)];
+
+      while (currentGameStatePairs.leftColumn.includes(matchingPair.kana)) {
+        matchingPair = hiragana[Math.floor(Math.random() * hiragana.length)];
+      }
+
+      leftColumn.push(matchingPair.kana);
+      rightColumn.push(matchingPair.roumaji);
+    }
+
+    leftColumn.sort((a: string, b: string) => 0.5 - Math.random());
+    rightColumn.sort((a: string, b: string) => 0.5 - Math.random());
+
+    setCurrentGameStatePairs({ leftColumn, rightColumn });
   }
 
-  // 5 random pairs
-  // if left column selected, highlight blue -- reselect is unselect
-  // if right column selected, highlight blue -- reselect is unselect
-  // if left && right, check if match -- if it is highlight that selection green else red
-  // make it disappear gradually and add new random pair in place after delay
-  // ideally these placements are delayed so that someone cant keep clicking the same place
-  // theres some weird logic in place for new rows to appear... might come from batches of 5 and show only one
-  // there should be delay for reappearing so that it incentivize the player matching other shown pairs
-  // dont get a random pair that already is on the board
+  const animateGrayscale = async () => {
+    while (true) {
+      // Grayscale from 0 to 100
+      await grayscaleControls.start({ filter: 'grayscale(100%)' });
+      // Delay for a short period
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Grayscale from 100 back to 0
+      await grayscaleControls.start({ filter: 'grayscale(0%)' });
+      // Delay for a short period before restarting the loop
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  };
+
+  const selectNextRandomPair = () => {
+    const newNextGameStatePairs: NextGameStatePairs = { leftColumn: [], rightColumn: [], pairLength: 0 }
+    for (let i = 0; i < 2; i++) {
+      let matchingPair = hiragana[Math.floor(Math.random() * hiragana.length)];
+
+      while (currentGameStatePairs.leftColumn.includes(matchingPair.kana)
+        && nextGameStatePairs.leftColumn.includes(matchingPair.kana)) {
+        matchingPair = hiragana[Math.floor(Math.random() * hiragana.length)];
+      }
+      newNextGameStatePairs.leftColumn.push(matchingPair.kana);
+      newNextGameStatePairs.rightColumn.push(matchingPair.roumaji);
+      newNextGameStatePairs.pairLength++;
+    }
+    setNextGameStatePairs((prevNextGameStatePairs) => newNextGameStatePairs);
+  }
 
   const onLeftColumnButtonClick = (index: number, kana: string) => {
     setLeftColumnSelection({ index, selection: kana });
@@ -44,7 +90,7 @@ const Game = () => {
     applySelectButtonStyles(index, rightColumnElements)
   };
 
-  const updateGameWithMatchAttempt = () => {
+  const updateGameStateWithMatchAttempt = () => {
     if (leftColumnSelection && rightColumnSelection) {
       const matchResult = hiragana.some((hiragana) => hiragana.kana === leftColumnSelection.selection && hiragana.roumaji === rightColumnSelection.selection);
       setCorrectMatch(matchResult);
@@ -52,6 +98,7 @@ const Game = () => {
       if (matchResult) {
         setComboStreak((prevCombo) => prevCombo + 1)
         applyCorrectMatchStyles();
+        replaceMatchedPair();
       } else {
         setComboStreak(0);
         applyIncorrectMatchStyles();
@@ -70,7 +117,7 @@ const Game = () => {
 
   const applySelectButtonStyles = (index: number, columnElementsRef: any) => {
     resetButtonStyles(columnElementsRef)
-    columnElementsRef.current[index].classList.add('border-blue-500', 'text-blue-500');
+    columnElementsRef.current[index]?.classList.add('border-blue-500', 'text-blue-500');
   };
 
   const applyCorrectMatchStyles = () => {
@@ -87,13 +134,62 @@ const Game = () => {
     rightColumnElements.current[rightColumnSelection.index]?.classList.add('border-red-500', 'text-red-500');
   }
 
+  const pickNextMismatchedPair = () => {
+    const randomIndex = Math.round(Math.random());
+
+    let newLeftElementToAdd;
+    let newRightElementToAdd;
+
+    if (randomIndex === 0 && nextGameStatePairs.pairLength > 1) {
+      newLeftElementToAdd = nextGameStatePairs.leftColumn[0];
+      newRightElementToAdd = nextGameStatePairs.rightColumn[1];
+      nextGameStatePairs.leftColumn.splice(0, 1);
+      nextGameStatePairs.rightColumn.splice(1);
+      nextGameStatePairs.pairLength--;
+    } else if (randomIndex === 1 && nextGameStatePairs.pairLength > 1) {
+      newLeftElementToAdd = nextGameStatePairs.leftColumn[1];
+      newRightElementToAdd = nextGameStatePairs.rightColumn[0];
+      nextGameStatePairs.leftColumn.splice(1);
+      nextGameStatePairs.rightColumn.splice(0, 1);
+      nextGameStatePairs.pairLength--;
+    } else {
+      newLeftElementToAdd = nextGameStatePairs.leftColumn[0];
+      newRightElementToAdd = nextGameStatePairs.rightColumn[0];
+      nextGameStatePairs.leftColumn.splice(0);
+      nextGameStatePairs.rightColumn.splice(0);
+      nextGameStatePairs.pairLength--;
+    }
+
+    if (nextGameStatePairs.pairLength === 0) {
+      // Exhausted next game pair options. Generate new pairs
+      selectNextRandomPair();
+    }
+
+    return { newLeftElementToAdd, newRightElementToAdd}
+  }
+
+  const replaceMatchedPair = () => {
+    const foundLeftColumnIndex = currentGameStatePairs.leftColumn.indexOf(leftColumnSelection.selection);
+    const foundRightColumnIndex = currentGameStatePairs.rightColumn.indexOf(rightColumnSelection.selection);
+
+    const { newLeftElementToAdd, newRightElementToAdd } = pickNextMismatchedPair();
+
+    const newCurrentGameStatePairs = structuredClone(currentGameStatePairs)
+
+    newCurrentGameStatePairs.leftColumn[foundLeftColumnIndex] = newLeftElementToAdd;
+    newCurrentGameStatePairs.rightColumn[foundRightColumnIndex] = newRightElementToAdd;
+
+    setCurrentGameStatePairs((prevCurrentGameStatePairs) => newCurrentGameStatePairs);
+  }
+
   useEffect(() => {
-    setMatchingPairs([]);
-    Array.from(Array(5).keys()).map(() => selectRandomPair());
+    setCurrentGameStatePairs({ leftColumn: [], rightColumn: [] });
+    selectInitialRandomPairs();
+    selectNextRandomPair();
   }, []);
 
   useEffect(() => {
-    updateGameWithMatchAttempt();
+    updateGameStateWithMatchAttempt();
   }, [leftColumnSelection, rightColumnSelection])
 
   return (
@@ -101,29 +197,29 @@ const Game = () => {
       <div className="flex justify-between gap-4">
         <p>Combo Streak: {comboStreak}</p>
         <div className="grid grid-cols-1 gap-4">
-          {matchingPairs.map((matchingPair, index) => (
-            <button
+          {currentGameStatePairs.leftColumn.map((kana, index) => (
+            <motion.button
               ref={(element) => leftColumnElements.current[index] = element}
-              onClick={() => onLeftColumnButtonClick(index, matchingPair.kana)}
-              key={`${matchingPair.kana}-${index}`}
+              onClick={() => onLeftColumnButtonClick(index, kana)}
+              key={`${kana}-${index}`}
               className={`hover:bg-gray-200 text-black font-bold py-2 px-4 border-2 border-b-4 border-gray-300 rounded-lg`}
             >
               <input className="hidden" type="radio" name="leftColumn" />
-              <label>{matchingPair.kana}</label>
-            </button>
+              <label>{kana}</label>
+            </motion.button>
           ))}
         </div>
         <div className="grid grid-cols-1 gap-4">
-          {matchingPairs.map((matchingPair, index) => (
-            <button
+          {currentGameStatePairs.rightColumn.map((roumaji, index) => (
+            <motion.button
               ref={(element) => rightColumnElements.current[index] = element}
-              onClick={() => onRightColumnButtonClick(index, matchingPair.roumaji)}
-              key={`${matchingPair.roumaji}-${index}`}
+              onClick={() => onRightColumnButtonClick(index, roumaji)}
+              key={`${roumaji}-${index}`}
               className={`hover:bg-gray-200 text-black font-bold py-2 px-4 border-2 border-b-4 border-gray-300 rounded-lg`}
             >
               <input className="hidden" type="radio" name="rightColumn" />
-              <label>{matchingPair.roumaji}</label>
-            </button>
+              <label>{roumaji}</label>
+            </motion.button>
           ))}
         </div>
       </div>
