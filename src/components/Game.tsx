@@ -6,7 +6,8 @@ import katakana from '../../constants/normal/katakana.json';
 import { motion, useAnimationControls } from 'framer-motion';
 import { QueueConstants } from '@/app/constants/queue-constants';
 import { GameConstants } from '@/app/constants/game-constants';
-import { Queue } from '@/lib/Queue';
+import { Queue, useQueue } from '@/lib/Queue';
+import { delayedFunctionExecution } from '../utils/utils';
 
 
 interface MatchingPair {
@@ -18,25 +19,21 @@ interface MatchingPair {
 interface GameStatePairs {
   leftColumn: string[];
   rightColumn: string[];
-  size: number;
 }
 
 
 const Game = () => {
   const [leftColumnSelection, setLeftColumnSelection] = useState<any>();
   const [rightColumnSelection, setRightColumnSelection] = useState<any>();
-  const [currentGameStatePairs, setCurrentGameStatePairs] = useState<GameStatePairs>({ leftColumn: [], rightColumn: [], size: 0 });
-  const [nextGameStatePairs, setNextGameStatePairs] = useState<MatchingPair>();
+  const [currentGameStatePairs, setCurrentGameStatePairs] = useState<GameStatePairs>({ leftColumn: [], rightColumn: [] });
   const [comboStreak, setComboStreak] = useState<number>(0);
   const leftColumnElements = useRef<(HTMLButtonElement | null)[]>([]);
   const rightColumnElements = useRef<(HTMLButtonElement | null)[]>([]);
-  const gamePairQueue = new Queue<MatchingPair>();
-
+  const gamePairQueue = useQueue<MatchingPair>();
 
   const selectInitialRandomPairs = () => {
     let leftColumn = [];
     let rightColumn = [];
-    let size = 0;
 
     for (let i = 0; i < GameConstants.MAX_ROWS_DISPLAYED; i++) {
       const randomIndex = Math.floor(Math.random() * hiragana.length);
@@ -51,13 +48,12 @@ const Game = () => {
 
       leftColumn.push(matchingPair.kana);
       rightColumn.push(matchingPair.roumaji);
-      size++;
     }
 
     leftColumn.sort((a: string, b: string) => 0.5 - Math.random());
     rightColumn.sort((a: string, b: string) => 0.5 - Math.random());
 
-    setCurrentGameStatePairs({ leftColumn, rightColumn, size });
+    setCurrentGameStatePairs({ leftColumn, rightColumn });
   }
 
   const enqueueNextRandomPairs = () => {
@@ -79,13 +75,6 @@ const Game = () => {
       firstMatchingPair['kana'] = secondMatchingPair['kana'];
       secondMatchingPair['kana'] = temporaryKana;
 
-      console.log(firstMatchingPair.kana, firstMatchingPair.roumaji)
-      console.log(secondMatchingPair.kana, secondMatchingPair.roumaji)
-
-      console.log('firstMatchingPair' + JSON.stringify(firstMatchingPair, null, 2))
-      console.log('secondMatchingPair' + JSON.stringify(secondMatchingPair, null, 2))
-
-
       gamePairQueue.enqueue(firstMatchingPair);
       gamePairQueue.enqueue(secondMatchingPair);
     }
@@ -102,17 +91,18 @@ const Game = () => {
     applySelectButtonStyles(index, rightColumnElements)
   };
 
-  const updateGameStateWithMatchAttempt = () => {
+  const updateGameStateWithMatchAttempt = async () => {
     if (leftColumnSelection && rightColumnSelection) {
       const matchResult = hiragana.some((hiragana) => hiragana.kana === leftColumnSelection.selection && hiragana.roumaji === rightColumnSelection.selection);
 
       if (matchResult) {
         setComboStreak((prevCombo) => prevCombo + 1)
         applyCorrectMatchStyles();
-        setTimeout(() => {
+        await delayedFunctionExecution(() => {
           replaceMatchedPair();
           checkQueueSize();
-        }, 2000);
+          console.log(gamePairQueue.getQueue())
+        }, 1000);
 
       } else {
         setComboStreak(0);
@@ -161,9 +151,9 @@ const Game = () => {
       console.log(newCurrentGameStatePairs)
 
       newCurrentGameStatePairs.leftColumn[foundLeftColumnIndex] = newGamePair.kana;
-      newCurrentGameStatePairs.rightColumn[foundRightColumnIndex] = newGamePair.kana;
+      newCurrentGameStatePairs.rightColumn[foundRightColumnIndex] = newGamePair.roumaji;
 
-      console.log(newCurrentGameStatePairs)
+      console.log('newCurrentGameStatePairs' + JSON.stringify(newCurrentGameStatePairs, null, 2))
 
       setCurrentGameStatePairs(newCurrentGameStatePairs);
 
@@ -171,26 +161,23 @@ const Game = () => {
   }
 
   const checkQueueSize = () => {
-    if (gamePairQueue.size < 5) {
+    console.log(gamePairQueue.size)
+    if (gamePairQueue.getQueue().length < 5) {
+      console.log('enqueue more random pairs: ' + gamePairQueue.getQueue().length)
       enqueueNextRandomPairs();
     }
   }
 
   useEffect(() => {
     gamePairQueue.clear();
-    setCurrentGameStatePairs({ leftColumn: [], rightColumn: [], size: 0 });
+    setCurrentGameStatePairs({ leftColumn: [], rightColumn: [] });
     selectInitialRandomPairs();
-    enqueueNextRandomPairs();
     checkQueueSize();
   }, []);
 
   useEffect(() => {
     updateGameStateWithMatchAttempt();
   }, [leftColumnSelection, rightColumnSelection]);
-
-  useEffect(() => {
-
-  }, [nextGameStatePairs])
 
   return (
     <>
