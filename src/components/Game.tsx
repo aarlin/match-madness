@@ -1,15 +1,14 @@
 
 'use client'
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, startTransition } from 'react';
 import hiragana from '../../constants/normal/hiragana.json';
 import katakana from '../../constants/normal/katakana.json';
 import { motion, useAnimationControls } from 'framer-motion';
 import { QueueConstants } from '@/app/constants/queue-constants';
 import { GameConstants } from '@/app/constants/game-constants';
 import { Queue, useQueue } from '@/lib/Queue';
-import { delayedFunctionExecution } from '../utils/utils';
 import { defaultComposer } from 'default-composer';
-
+import { gsap } from 'gsap';
 
 interface MatchingPair {
   kana: string;
@@ -62,14 +61,14 @@ const Game = () => {
       // grab two pairings, swap in place, add to queue
       const firstRandomIndex = Math.floor(Math.random() * hiragana.length);
       const secondRandomIndex = Math.floor(Math.random() * hiragana.length);
-      let firstMatchingPair = { ...hiragana[firstRandomIndex]};
-      let secondMatchingPair = { ...hiragana[secondRandomIndex]};
+      let firstMatchingPair = { ...hiragana[firstRandomIndex] };
+      let secondMatchingPair = { ...hiragana[secondRandomIndex] };
 
       while (currentGameStatePairs.leftColumn.includes(firstMatchingPair.kana)
         && currentGameStatePairs.leftColumn.includes(secondMatchingPair.kana)
         && (firstMatchingPair.kana === secondMatchingPair.kana)) {
-        firstMatchingPair = {...hiragana[firstRandomIndex]};
-        secondMatchingPair = {...hiragana[secondRandomIndex]};
+        firstMatchingPair = { ...hiragana[firstRandomIndex] };
+        secondMatchingPair = { ...hiragana[secondRandomIndex] };
       }
       // swap the values around
       const temporaryKana = firstMatchingPair['kana'];
@@ -92,18 +91,17 @@ const Game = () => {
     applySelectButtonStyles(index, rightColumnElements)
   };
 
-  const updateGameStateWithMatchAttempt = async () => {
+  const updateGameStateWithMatchAttempt = () => {
     if (leftColumnSelection && rightColumnSelection) {
       const matchResult = hiragana.some((hiragana) => hiragana.kana === leftColumnSelection.selection && hiragana.roumaji === rightColumnSelection.selection);
 
       if (matchResult) {
         setComboStreak((prevCombo) => prevCombo + 1)
         applyCorrectMatchStyles();
-        await delayedFunctionExecution(() => {
+        setTimeout(() => {
           replaceMatchedPair();
-          checkQueueSize();
-          console.log(gamePairQueue.getQueue())
-        }, 800);
+        }, 800)
+        checkQueueSize();
 
       } else {
         setComboStreak(0);
@@ -127,10 +125,35 @@ const Game = () => {
   };
 
   const applyCorrectMatchStyles = () => {
+    const tl = gsap.timeline();
+
     resetButtonStyles(leftColumnElements)
     resetButtonStyles(rightColumnElements);
-    leftColumnElements.current[leftColumnSelection.index]?.classList.add('border-green-500', 'text-green-500', 'transition-animation');
-    rightColumnElements.current[rightColumnSelection.index]?.classList.add('border-green-500', 'text-green-500', 'transition-animation');
+
+    const leftSelection = { ...leftColumnSelection };
+    const rightSelection = { ...rightColumnSelection };
+
+
+    leftColumnElements.current[leftSelection.index]?.classList.add('border-green-500', 'text-green-500', 'transition-animation');
+    rightColumnElements.current[rightSelection.index]?.classList.add('border-green-500', 'text-green-500', 'transition-animation');
+
+    gsap.fromTo(
+      leftColumnElements.current[leftSelection.index],
+      { opacity: 1 },
+      { duration: 2, opacity: 0, ease: 'power1.out', stagger: 0.1 }
+    );
+
+    gsap.fromTo(
+      rightColumnElements.current[rightSelection.index],
+      { opacity: 1 },
+      { duration: 2, opacity: 0, ease: 'power1.out', stagger: 0.1 } // Delay the right buttons' animation to create a swiping motion
+    );
+
+    gsap.to([...leftColumnElements.current, ...rightColumnElements.current], {
+      duration: 2,
+      opacity: 1,
+      delay: 1.5, // Adjust this delay based on your needs
+    });
   }
 
   const applyIncorrectMatchStyles = () => {
@@ -180,7 +203,11 @@ const Game = () => {
 
   useEffect(() => {
     updateGameStateWithMatchAttempt();
-  }, [leftColumnSelection, rightColumnSelection]);
+  }, [leftColumnSelection, rightColumnSelection])
+
+  // useEffect(() => {
+  //   updateGameStateWithMatchAttempt();
+  // }, [leftColumnSelection, rightColumnSelection]);
 
   return (
     <>
