@@ -1,171 +1,171 @@
-[
+export const advancedDifficultyHiragana = [
   {
-    "kana": "ッ",
+    "kana": "っ",
     "roumaji": "(pause)",
     "type": "sokuon"
   },
   {
-    "kana": "キャ",
+    "kana": "きゃ",
     "roumaji": "kya",
     "type": "youon"
   },
   {
-    "kana": "キュ",
+    "kana": "きゅ",
     "roumaji": "kyu",
     "type": "youon"
   },
   {
-    "kana": "キョ",
+    "kana": "きょ",
     "roumaji": "kyo",
     "type": "youon"
   },
   {
-    "kana": "シャ",
+    "kana": "しゃ",
     "roumaji": "sha",
     "type": "youon"
   },
   {
-    "kana": "シュ",
+    "kana": "しゅ",
     "roumaji": "shu",
     "type": "youon"
   },
   {
-    "kana": "ショ",
+    "kana": "しょ",
     "roumaji": "sho",
     "type": "youon"
   },
   {
-    "kana": "チャ",
+    "kana": "ちゃ",
     "roumaji": "cha",
     "type": "youon"
   },
   {
-    "kana": "チュ",
+    "kana": "ちゅ",
     "roumaji": "chu",
     "type": "youon"
   },
   {
-    "kana": "チョ",
+    "kana": "ちょ",
     "roumaji": "cho",
     "type": "youon"
   },
   {
-    "kana": "ニャ",
+    "kana": "にゃ",
     "roumaji": "nya",
     "type": "youon"
   },
   {
-    "kana": "ニュ",
+    "kana": "にゅ",
     "roumaji": "nyu",
     "type": "youon"
   },
   {
-    "kana": "ニョ",
+    "kana": "にょ",
     "roumaji": "nyo",
     "type": "youon"
   },
   {
-    "kana": "ヒャ",
+    "kana": "ひゃ",
     "roumaji": "hya",
     "type": "youon"
   },
   {
-    "kana": "ヒュ",
+    "kana": "ひゅ",
     "roumaji": "hyu",
     "type": "youon"
   },
   {
-    "kana": "ヒョ",
+    "kana": "ひょ",
     "roumaji": "hyo",
     "type": "youon"
   },
   {
-    "kana": "ミャ",
+    "kana": "みゃ",
     "roumaji": "mya",
     "type": "youon"
   },
   {
-    "kana": "ミュ",
+    "kana": "みゅ",
     "roumaji": "myu",
     "type": "youon"
   },
   {
-    "kana": "ミョ",
+    "kana": "みょ",
     "roumaji": "myo",
     "type": "youon"
   },
   {
-    "kana": "リャ",
+    "kana": "りゃ",
     "roumaji": "rya",
     "type": "youon"
   },
   {
-    "kana": "リュ",
+    "kana": "りゅ",
     "roumaji": "ryu",
     "type": "youon"
   },
   {
-    "kana": "リョ",
+    "kana": "りょ",
     "roumaji": "ryo",
     "type": "youon"
   },
   {
-    "kana": "ギャ",
+    "kana": "ぎゃ",
     "roumaji": "gya",
     "type": "youon"
   },
   {
-    "kana": "ギュ",
+    "kana": "ぎゅ",
     "roumaji": "gyu",
     "type": "youon"
   },
   {
-    "kana": "ギョ",
+    "kana": "ぎょ",
     "roumaji": "gyo",
     "type": "youon"
   },
   {
-    "kana": "ジャ",
+    "kana": "じゃ",
     "roumaji": "ja",
     "type": "youon"
   },
   {
-    "kana": "ジュ",
+    "kana": "じゅ",
     "roumaji": "ju",
     "type": "youon"
   },
   {
-    "kana": "ジョ",
+    "kana": "じょ",
     "roumaji": "jo",
     "type": "youon"
   },
   {
-    "kana": "ビャ",
+    "kana": "びゃ",
     "roumaji": "bya",
     "type": "youon"
   },
   {
-    "kana": "ビュ",
+    "kana": "びゅ",
     "roumaji": "byu",
     "type": "youon"
   },
   {
-    "kana": "ビョ",
+    "kana": "びょ",
     "roumaji": "byo",
     "type": "youon"
   },
   {
-    "kana": "ピャ",
+    "kana": "ぴゃ",
     "roumaji": "pya",
     "type": "youon"
   },
   {
-    "kana": "ピュ",
+    "kana": "ぴゅ",
     "roumaji": "pyu",
     "type": "youon"
   },
   {
-    "kana": "ピョ",
+    "kana": "ぴょ",
     "roumaji": "pyo",
     "type": "youon"
   }

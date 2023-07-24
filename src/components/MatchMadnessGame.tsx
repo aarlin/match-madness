@@ -1,8 +1,8 @@
 
 'use client'
 import React, { useEffect, useState, useRef, startTransition } from 'react';
-import hiragana from '../../assets/normal/hiragana.json';
-import katakana from '../../assets/normal/katakana.json';
+import { normalDifficultyHiragana } from '../assets/normal/hiragana';
+import { normalDifficultyKatakana } from '../assets/normal/katakana';
 import { motion, useAnimationControls, useAnimation } from 'framer-motion';
 import { QueueConstants } from '@/app/constants/queue-constants';
 import { GameConstants } from '@/app/constants/game-constants';
@@ -10,6 +10,7 @@ import { Queue, useQueue } from '@/lib/Queue';
 import { defaultComposer } from 'default-composer';
 import { gsap } from 'gsap';
 import useSound from 'use-sound';
+import { GameMode, useGameModeStore } from '@/lib/store';
 
 interface MatchingPair {
   kana: string;
@@ -21,7 +22,6 @@ interface GameStatePairs {
   leftColumn: string[];
   rightColumn: string[];
 }
-
 
 export const MatchMadnessGame = () => {
   const [leftColumnSelection, setLeftColumnSelection] = useState<any>();
@@ -35,18 +35,23 @@ export const MatchMadnessGame = () => {
   const comboStreakControls = useAnimation();
   const [playCorrect] = useSound('/sounds/correct.mp3');
   const [playIncorrect] = useSound('/sounds/incorrect.mp3');
+  const gameMode = useGameModeStore((state) => state.gameMode);
+  const [gameFile, setGameFile] = useState<any[]>([]);
 
   const selectInitialRandomPairs = () => {
     let leftColumn = [];
     let rightColumn = [];
 
+    console.log(gameFile)
+    console.log(gameMode)
+
     for (let i = 0; i < GameConstants.MAX_ROWS_DISPLAYED; i++) {
-      const randomIndex = Math.floor(Math.random() * hiragana.length);
-      let matchingPair = hiragana[randomIndex];
+      const randomIndex = Math.floor(Math.random() * gameFile.length);
+      let matchingPair = gameFile[randomIndex];
 
       while (currentGameStatePairs.leftColumn.includes(matchingPair.kana)
         && currentGameStatePairs.rightColumn.includes(matchingPair.roumaji)) {
-        matchingPair = hiragana[randomIndex];
+        matchingPair = gameFile[randomIndex];
       }
 
       console.log('matchingPair: ', matchingPair)
@@ -64,16 +69,16 @@ export const MatchMadnessGame = () => {
   const enqueueNextRandomPairs = () => {
     for (let i = 0; i < QueueConstants.MAX_QUEUE_SIZE; i++) {
       // grab two pairings, swap in place, add to queue
-      const firstRandomIndex = Math.floor(Math.random() * hiragana.length);
-      const secondRandomIndex = Math.floor(Math.random() * hiragana.length);
-      let firstMatchingPair = { ...hiragana[firstRandomIndex] };
-      let secondMatchingPair = { ...hiragana[secondRandomIndex] };
+      const firstRandomIndex = Math.floor(Math.random() * gameFile.length);
+      const secondRandomIndex = Math.floor(Math.random() * gameFile.length);
+      let firstMatchingPair = { ...gameFile[firstRandomIndex] };
+      let secondMatchingPair = { ...gameFile[secondRandomIndex] };
 
       while (currentGameStatePairs.leftColumn.includes(firstMatchingPair.kana)
         && currentGameStatePairs.leftColumn.includes(secondMatchingPair.kana)
         && (firstMatchingPair.kana === secondMatchingPair.kana)) {
-        firstMatchingPair = { ...hiragana[firstRandomIndex] };
-        secondMatchingPair = { ...hiragana[secondRandomIndex] };
+        firstMatchingPair = { ...gameFile[firstRandomIndex] };
+        secondMatchingPair = { ...gameFile[secondRandomIndex] };
       }
       // swap the values around
       const temporaryKana = firstMatchingPair['kana'];
@@ -98,7 +103,7 @@ export const MatchMadnessGame = () => {
 
   const updateGameStateWithMatchAttempt = () => {
     if (leftColumnSelection && rightColumnSelection) {
-      const matchResult = hiragana.some((hiragana) => hiragana.kana === leftColumnSelection.selection && hiragana.roumaji === rightColumnSelection.selection);
+      const matchResult = gameFile.some((gameData) => gameData.kana === leftColumnSelection.selection && gameData.roumaji === rightColumnSelection.selection);
 
       if (matchResult) {
         playCorrect();
@@ -201,12 +206,35 @@ export const MatchMadnessGame = () => {
     }
   }
 
+  const loadGameData = () => {
+    console.log(gameMode, gameFile)
+    console.log(normalDifficultyHiragana, normalDifficultyKatakana)
+    switch (gameMode) {
+      case GameMode.HIRAGANA:
+        setGameFile((prevGameFile) => [...normalDifficultyHiragana]);
+        break;
+      case GameMode.KATAKANA:
+        setGameFile((prevGameFile) => [...normalDifficultyKatakana]);
+        break;
+      case GameMode.CUSTOM_GAME:
+        // TODO: Custom game files
+        break;
+    }
+  }
+
   useEffect(() => {
     gamePairQueue.clear();
+    loadGameData();
     setCurrentGameStatePairs({ leftColumn: [], rightColumn: [] });
-    selectInitialRandomPairs();
-    checkQueueSize();
-  }, []);
+  }, [gameMode]);
+
+  useEffect(() => {
+    console.log('gameFile ')
+    if (gameFile.length > 0) {
+      selectInitialRandomPairs();
+      checkQueueSize();
+    }
+  }, [gameFile])
 
   useEffect(() => {
     setGameStarted(true);

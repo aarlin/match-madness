@@ -1,11 +1,29 @@
+import { create, SetState } from 'zustand';
+
+enum GameMode {
+  HIRAGANA = 'hiragana',
+  KATAKANA = 'katakana',
+  CUSTOM_GAME = 'customGame'
+}
+
+interface GameModeStore {
+  gameMode: GameMode;
+  setGameMode: (mode: GameMode) => void;
+}
+
+const useGameModeStore = create<GameModeStore>((set: SetState<GameModeStore>) => ({
+  gameMode: GameMode.HIRAGANA,
+
+  // Function to set the game mode
+  setGameMode: (mode) => set({ gameMode: mode }),
+}));
+
+export { useGameModeStore, GameMode };
+
 // import { createContext, useContext } from 'react'
 // import { createStore, useStore as useZustandStore } from 'zustand'
 
 
-// enum GameMode {
-//   HIRAGANA = 'hiragana',
-//   KATAKANA = 'katakana'
-// }
 // interface StoreInterface {
 //   gameMode: GameMode,
 //   lastUpdate: number

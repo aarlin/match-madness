@@ -1,4 +1,4 @@
-[
+export const normalDifficultyKatakana = [
     {
       "kana": "ア",
       "roumaji": "a",

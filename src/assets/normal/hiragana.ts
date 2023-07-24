@@ -1,4 +1,4 @@
-[
+export const normalDifficultyHiragana = [
   {
     "kana": "あ",
     "roumaji": "a",
