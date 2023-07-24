@@ -1,14 +1,15 @@
 
 'use client'
 import React, { useEffect, useState, useRef, startTransition } from 'react';
-import hiragana from '../../constants/normal/hiragana.json';
-import katakana from '../../constants/normal/katakana.json';
-import { motion, useAnimationControls } from 'framer-motion';
+import hiragana from '../../assets/normal/hiragana.json';
+import katakana from '../../assets/normal/katakana.json';
+import { motion, useAnimationControls, useAnimation } from 'framer-motion';
 import { QueueConstants } from '@/app/constants/queue-constants';
 import { GameConstants } from '@/app/constants/game-constants';
 import { Queue, useQueue } from '@/lib/Queue';
 import { defaultComposer } from 'default-composer';
 import { gsap } from 'gsap';
+import useSound from 'use-sound';
 
 interface MatchingPair {
   kana: string;
@@ -27,9 +28,13 @@ const Game = () => {
   const [rightColumnSelection, setRightColumnSelection] = useState<any>();
   const [currentGameStatePairs, setCurrentGameStatePairs] = useState<GameStatePairs>({ leftColumn: [], rightColumn: [] });
   const [comboStreak, setComboStreak] = useState<number>(0);
+  const [gameStarted, setGameStarted] = useState<boolean>();
   const leftColumnElements = useRef<(HTMLButtonElement | null)[]>([]);
   const rightColumnElements = useRef<(HTMLButtonElement | null)[]>([]);
   const gamePairQueue = useQueue<MatchingPair>();
+  const comboStreakControls = useAnimation();
+  const [playCorrect] = useSound('/sounds/correct.mp3');
+  const [playIncorrect] = useSound('/sounds/incorrect.mp3');
 
   const selectInitialRandomPairs = () => {
     let leftColumn = [];
@@ -96,14 +101,14 @@ const Game = () => {
       const matchResult = hiragana.some((hiragana) => hiragana.kana === leftColumnSelection.selection && hiragana.roumaji === rightColumnSelection.selection);
 
       if (matchResult) {
+        playCorrect();
         setComboStreak((prevCombo) => prevCombo + 1)
         applyCorrectMatchStyles();
-        setTimeout(() => {
-          replaceMatchedPair();
-        }, 800)
+        replaceMatchedPair();
         checkQueueSize();
 
       } else {
+        playIncorrect();
         setComboStreak(0);
         applyIncorrectMatchStyles();
       }
@@ -181,7 +186,9 @@ const Game = () => {
 
       console.log(defaultComposer(currentGameStatePairs, newCurrentGameStatePairs))
 
-      setCurrentGameStatePairs((prevGameStatePairs) => defaultComposer(prevGameStatePairs, newCurrentGameStatePairs));
+      setTimeout(() => {
+        setCurrentGameStatePairs((prevGameStatePairs) => defaultComposer(prevGameStatePairs, newCurrentGameStatePairs));
+      }, 600)
 
     }
   }
@@ -202,21 +209,55 @@ const Game = () => {
   }, []);
 
   useEffect(() => {
+    setGameStarted(true);
     updateGameStateWithMatchAttempt();
   }, [leftColumnSelection, rightColumnSelection])
 
-  // useEffect(() => {
-  //   updateGameStateWithMatchAttempt();
-  // }, [leftColumnSelection, rightColumnSelection]);
+  useEffect(() => {
+    if (comboStreak > 0) {
+      comboStreakControls.start({
+        y: 0,
+        scale: [1, 1.2, 0.9, 1.1, 0.95, 1],
+        transition: {
+          duration: 0.5,
+        },
+      });
+      comboStreakControls.start({
+        y: 0,
+        scale: [1, 1.5, 1],
+        transition: {
+          duration: 0.3,
+        },
+      });
+    } else {
+      // Animate the combo streak down to 0 when it's set to 0
+      comboStreakControls.start({
+        y: 50, // Move the combo div down to y position 100
+        scale: [1, 0.6, 0.2, 0],
+        transition: {
+          duration: 0.5, // Adjust the duration as needed
+        },
+      });
+    }
+  }, [comboStreak])
 
   return (
     <>
       <div className="flex justify-between gap-4">
-        <p>Combo Streak: {comboStreak}</p>
+        <div className="flex items-center mr-5">
+          {(comboStreak > 0 || gameStarted) && ( // Show the streak only when comboStreak is greater than 0
+            <motion.div
+              className="combo-counter text-3xl font-bold text-green-500"
+              animate={comboStreakControls}
+            >
+              x{comboStreak}
+            </motion.div>
+          )}
+        </div>
         <div className="grid grid-cols-1 gap-4">
           {currentGameStatePairs.leftColumn.map((kana, index) => (
             <motion.button
-              ref={(element) => leftColumnElements.current[index] = element}
+              ref={(element) => (leftColumnElements.current[index] = element)}
               onClick={() => onLeftColumnButtonClick(index, kana)}
               key={`${kana}-${index}`}
               className={`hover:bg-gray-300 text-black font-bold py-2 px-4 border-2 border-b-4 border-gray-400 rounded-lg`}
@@ -229,7 +270,7 @@ const Game = () => {
         <div className="grid grid-cols-1 gap-4">
           {currentGameStatePairs.rightColumn.map((roumaji, index) => (
             <motion.button
-              ref={(element) => rightColumnElements.current[index] = element}
+              ref={(element) => (rightColumnElements.current[index] = element)}
               onClick={() => onRightColumnButtonClick(index, roumaji)}
               key={`${roumaji}-${index}`}
               className={`hover:bg-gray-300 text-black font-bold py-2 px-4 border-2 border-b-4 border-gray-400 rounded-lg`}
@@ -241,8 +282,7 @@ const Game = () => {
         </div>
       </div>
     </>
-
-  )
+  );
 }
 
 export default Game;

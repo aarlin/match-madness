@@ -34,8 +34,11 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
 ## To Implement
 
-- [ ] Create leaderboards
-- [ ] Allow user to input their own json to match against
+- [ ] Lives
+- [ ] Personal best
+- [ ] Share custom with button & load from someone else's
+- [ ] Allow user to input their own json/csv to match against
+- [ ] Create leaderboard
 
 ## Bugs
 
