@@ -23,7 +23,7 @@ interface GameStatePairs {
 }
 
 
-const Game = () => {
+export const MatchMadnessGame = () => {
   const [leftColumnSelection, setLeftColumnSelection] = useState<any>();
   const [rightColumnSelection, setRightColumnSelection] = useState<any>();
   const [currentGameStatePairs, setCurrentGameStatePairs] = useState<GameStatePairs>({ leftColumn: [], rightColumn: [] });
@@ -284,5 +284,3 @@ const Game = () => {
     </>
   );
 }
-
-export default Game;

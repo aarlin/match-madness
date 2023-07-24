@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import logo from '../../public/logo.svg';
-import Game from '../components/Game';
+import { MatchMadnessGame } from '../components/MatchMadnessGame';
 
 export default function Home() {
   return (
@@ -33,7 +33,7 @@ export default function Home() {
       </div>
 
       <div className="relative flex place-items-center after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3">
-        <Game />
+        <MatchMadnessGame />
       </div>
     </main>
   )
