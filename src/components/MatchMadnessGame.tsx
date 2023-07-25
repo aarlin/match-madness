@@ -126,7 +126,7 @@ export const MatchMadnessGame = () => {
 
   const resetButtonStyles = (columnElementsRef: any) => {
     for (let key of Object.keys(columnElementsRef.current)) {
-      columnElementsRef.current[key].className = `text-black font-bold py-2 px-4 border-2 border-b-4 border-gray-400 rounded-lg`
+      columnElementsRef.current[key].className = `text-black font-bold py-3 px-6 border-2 border-b-4 border-gray-400 rounded-lg`
     }
   }
 
@@ -275,42 +275,66 @@ export const MatchMadnessGame = () => {
 
   return (
     <>
-      <div className="flex justify-between gap-4">
-        <div className="flex items-center mr-5">
-          {(comboStreak > 0 || gameStarted) && ( // Show the streak only when comboStreak is greater than 0
-            <motion.div
-              className="combo-counter text-xl font-bold text-green-500"
-              animate={comboStreakControls}
-            >
-              Combo x{comboStreak}
-            </motion.div>
-          )}
+      {/* <div>
+        <div className="relative flex h-4 w-full overflow-hidden rounded-full bg-secondary-200">
+          <div className="flex h-full bg-primary-500"></div>
         </div>
-        <div className="grid grid-cols-1 gap-4">
-          {currentGameStatePairs.leftColumn.map((kana, index) => (
-            <motion.button
-              ref={(element) => (leftColumnElements.current[index] = element)}
-              onClick={() => onLeftColumnButtonClick(index, kana)}
-              key={`${kana}-${index}`}
-              className={`hover:bg-gray-300 text-black font-bold py-2 px-4 border-2 border-b-4 border-gray-400 rounded-lg`}
-            >
-              <input className="hidden" type="radio" name="leftColumn" />
-              <label>{kana}</label>
-            </motion.button>
-          ))}
+
+        <div className="space-y-1">
+          <dl className="flex items-center justify-between">
+            <dt className="font-medium text-secondary-700">Progress</dt>
+            <dd className="text-sm text-secondary-500">35%</dd>
+          </dl>
+          <div className="relative flex h-2 w-full overflow-hidden rounded-full bg-secondary-200">
+            <div className="flex h-full items-center justify-center bg-primary-500 text-xs text-white"></div>
+          </div>
         </div>
-        <div className="grid grid-cols-1 gap-4">
-          {currentGameStatePairs.rightColumn.map((roumaji, index) => (
-            <motion.button
-              ref={(element) => (rightColumnElements.current[index] = element)}
-              onClick={() => onRightColumnButtonClick(index, roumaji)}
-              key={`${roumaji}-${index}`}
-              className={`hover:bg-gray-300 text-black font-bold py-2 px-4 border-2 border-b-4 border-gray-400 rounded-lg`}
-            >
-              <input className="hidden" type="radio" name="rightColumn" />
-              <label>{roumaji}</label>
-            </motion.button>
-          ))}
+
+      </div> */}
+      <div className="flex justify-center">
+        <div className="grid grid-cols-2 gap-4">
+
+          {/* Combo Streak Spanning Two Columns */}
+          <div className="col-span-2 flex justify-center items-center mb-4">
+            {(comboStreak > 0 || gameStarted) && (
+              <motion.div
+                className="combo-counter text-xl font-bold text-green-500"
+                animate={comboStreakControls}
+              >
+                Combo x{comboStreak}
+              </motion.div>
+            )}
+          </div>
+
+          {/* Left Column */}
+          <div className="grid grid-cols-1 gap-4">
+            {currentGameStatePairs.leftColumn.map((kana, index) => (
+              <motion.button
+                ref={(element) => (leftColumnElements.current[index] = element)}
+                onClick={() => onLeftColumnButtonClick(index, kana)}
+                key={`${kana}-${index}`}
+                className={`hover:bg-gray-300 text-black font-bold py-3 px-6 md:py-4 md:px-8 border-2 border-b-4 border-gray-400 rounded-lg btn-style flex justify-center items-center`}
+              >
+                <input className="hidden" type="radio" name="leftColumn" />
+                <label>{kana}</label>
+              </motion.button>
+            ))}
+          </div>
+
+          {/* Right Column */}
+          <div className="grid grid-cols-1 gap-4">
+            {currentGameStatePairs.rightColumn.map((roumaji, index) => (
+              <motion.button
+                ref={(element) => (rightColumnElements.current[index] = element)}
+                onClick={() => onRightColumnButtonClick(index, roumaji)}
+                key={`${roumaji}-${index}`}
+                className={`hover:bg-gray-300 text-black font-bold py-3 px-6 md:py-4 md:px-8 border-2 border-b-4 border-gray-400 rounded-lg btn-style flex justify-center items-center`}
+              >
+                <input className="hidden" type="radio" name="rightColumn" />
+                <label>{roumaji}</label>
+              </motion.button>
+            ))}
+          </div>
         </div>
       </div>
     </>
