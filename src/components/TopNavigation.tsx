@@ -1,7 +1,8 @@
 'use client'
 import { GameMode, useCustomGameStore, useGameModeStore } from '../lib/store';
+import { redirect } from 'next/navigation';
 
-export const GameModeSelection = () => {
+export const TopNavigation = () => {
   const setGameMode = useGameModeStore((state) => state.setGameMode);
   const setShowModal = useCustomGameStore((state) => state.setShowModal);
 
@@ -18,6 +19,10 @@ export const GameModeSelection = () => {
       <button onClick={() => setShowModal(true)}
         className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded-lg">
         Custom Game
+      </button>
+      <button onClick={() => redirect('/community')}
+        className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded-lg">
+        Community
       </button>
     </>
   )

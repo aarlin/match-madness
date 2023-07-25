@@ -126,7 +126,7 @@ export const MatchMadnessGame = () => {
 
   const resetButtonStyles = (columnElementsRef: any) => {
     for (let key of Object.keys(columnElementsRef.current)) {
-      columnElementsRef.current[key].className = `text-black font-bold py-3 px-6 border-2 border-b-4 border-gray-400 rounded-lg`
+      columnElementsRef.current[key].className = GameConstants.DEFAULT_BUTTON_STYLES;
     }
   }
 
@@ -313,7 +313,7 @@ export const MatchMadnessGame = () => {
                 ref={(element) => (leftColumnElements.current[index] = element)}
                 onClick={() => onLeftColumnButtonClick(index, kana)}
                 key={`${kana}-${index}`}
-                className={`hover:bg-gray-300 text-black font-bold py-3 px-6 md:py-4 md:px-8 border-2 border-b-4 border-gray-400 rounded-lg btn-style flex justify-center items-center`}
+                className={GameConstants.DEFAULT_BUTTON_STYLES}
               >
                 <input className="hidden" type="radio" name="leftColumn" />
                 <label>{kana}</label>
@@ -328,7 +328,7 @@ export const MatchMadnessGame = () => {
                 ref={(element) => (rightColumnElements.current[index] = element)}
                 onClick={() => onRightColumnButtonClick(index, roumaji)}
                 key={`${roumaji}-${index}`}
-                className={`hover:bg-gray-300 text-black font-bold py-3 px-6 md:py-4 md:px-8 border-2 border-b-4 border-gray-400 rounded-lg btn-style flex justify-center items-center`}
+                className={GameConstants.DEFAULT_BUTTON_STYLES}
               >
                 <input className="hidden" type="radio" name="rightColumn" />
                 <label>{roumaji}</label>

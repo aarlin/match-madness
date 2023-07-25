@@ -26,11 +26,12 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 - [ ] Play against others like Typeracer
 - [ ] Play against your ghost like Monkeytype
 - [ ] Modal with kana <-> roumaji
+- [ ] See other's created game files in a community share tab
 
 ## Bugs
 
-- [ ] Red highlight stays on
-- [ ] Playing too fast causes race condition and game state is messed up
+- [x] Red highlight stays on
+- [x] Playing too fast causes race condition and game state is messed up
 
 ## References
 
@@ -46,3 +47,4 @@ https://merakiui.com/
 
 https://www.hyperui.dev/
 
+https://nextjs.org/learn
