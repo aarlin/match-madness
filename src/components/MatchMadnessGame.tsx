@@ -76,6 +76,8 @@ export const MatchMadnessGame = () => {
 
       while (currentGameStatePairs.leftColumn.includes(firstMatchingPair.kana)
         && currentGameStatePairs.leftColumn.includes(secondMatchingPair.kana)
+        && currentGameStatePairs.rightColumn.includes(firstMatchingPair.roumaji)
+        && currentGameStatePairs.rightColumn.includes(secondMatchingPair.roumaji)
         && (firstMatchingPair.kana === secondMatchingPair.kana)) {
         firstMatchingPair = { ...gameFile[firstRandomIndex] };
         secondMatchingPair = { ...gameFile[secondRandomIndex] };
@@ -111,7 +113,6 @@ export const MatchMadnessGame = () => {
         applyCorrectMatchStyles();
         replaceMatchedPair();
         checkQueueSize();
-
       } else {
         playIncorrect();
         setComboStreak(0);
@@ -125,27 +126,25 @@ export const MatchMadnessGame = () => {
 
   const resetButtonStyles = (columnElementsRef: any) => {
     for (let key of Object.keys(columnElementsRef.current)) {
-      columnElementsRef.current[key].className = `hover:bg-gray-300 text-black font-bold py-2 px-4 border-2 border-b-4 border-gray-400 rounded-lg`
+      columnElementsRef.current[key].className = `text-black font-bold py-2 px-4 border-2 border-b-4 border-gray-400 rounded-lg`
     }
   }
 
   const applySelectButtonStyles = (index: number, columnElementsRef: any) => {
     resetButtonStyles(columnElementsRef)
-    columnElementsRef.current[index]?.classList.add('border-blue-500', 'text-blue-500');
+    columnElementsRef.current[index]?.classList.remove('border-gray-400');
+    columnElementsRef.current[index]?.classList.add('border-blue-500', 'bg-blue-100', 'text-blue-500');
   };
 
   const applyCorrectMatchStyles = () => {
-    const tl = gsap.timeline();
-
     resetButtonStyles(leftColumnElements)
     resetButtonStyles(rightColumnElements);
 
     const leftSelection = { ...leftColumnSelection };
     const rightSelection = { ...rightColumnSelection };
 
-
-    leftColumnElements.current[leftSelection.index]?.classList.add('border-green-500', 'text-green-500', 'transition-animation');
-    rightColumnElements.current[rightSelection.index]?.classList.add('border-green-500', 'text-green-500', 'transition-animation');
+    leftColumnElements.current[leftSelection.index]?.classList.add('border-green-500', 'bg-green-100', 'text-green-500', 'transition-animation');
+    rightColumnElements.current[rightSelection.index]?.classList.add('border-green-500', 'bg-green-100', 'text-green-500', 'transition-animation');
 
     gsap.fromTo(
       leftColumnElements.current[leftSelection.index],
@@ -169,8 +168,13 @@ export const MatchMadnessGame = () => {
   const applyIncorrectMatchStyles = () => {
     resetButtonStyles(leftColumnElements)
     resetButtonStyles(rightColumnElements);
-    leftColumnElements.current[leftColumnSelection.index]?.classList.add('border-red-500', 'text-red-500');
-    rightColumnElements.current[rightColumnSelection.index]?.classList.add('border-red-500', 'text-red-500');
+    leftColumnElements.current[leftColumnSelection.index]?.classList.add('border-red-500', 'bg-red-100', 'text-red-500');
+    rightColumnElements.current[rightColumnSelection.index]?.classList.add('border-red-500', 'bg-red-100', 'text-red-500');
+
+    setTimeout(() => {
+      resetButtonStyles(leftColumnElements)
+      resetButtonStyles(rightColumnElements);
+    }, 400)
   }
 
   const replaceMatchedPair = () => {
@@ -275,10 +279,10 @@ export const MatchMadnessGame = () => {
         <div className="flex items-center mr-5">
           {(comboStreak > 0 || gameStarted) && ( // Show the streak only when comboStreak is greater than 0
             <motion.div
-              className="combo-counter text-3xl font-bold text-green-500"
+              className="combo-counter text-xl font-bold text-green-500"
               animate={comboStreakControls}
             >
-              x{comboStreak}
+              Combo x{comboStreak}
             </motion.div>
           )}
         </div>

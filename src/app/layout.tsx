@@ -6,14 +6,10 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Match Madness',
-  description: 'Duolingo Match Madness recreated in React',
+  description: 'Duolingo Match Madness inspired game recreated in React',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode}) {
   return (
     <html lang="en">
       <body className={inter.className}>{children}</body>

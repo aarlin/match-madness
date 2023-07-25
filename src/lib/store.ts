@@ -11,14 +11,22 @@ interface GameModeStore {
   setGameMode: (mode: GameMode) => void;
 }
 
+interface CustomGameStore {
+  showModal: boolean;
+  setShowModal: (visibility: boolean) => void;
+}
+
 const useGameModeStore = create<GameModeStore>((set: SetState<GameModeStore>) => ({
   gameMode: GameMode.HIRAGANA,
-
-  // Function to set the game mode
   setGameMode: (mode) => set({ gameMode: mode }),
 }));
 
-export { useGameModeStore, GameMode };
+const useCustomGameStore = create<CustomGameStore>((set: SetState<CustomGameStore>) => ({
+  showModal: false,
+  setShowModal: (visibility) => set({ showModal: visibility }),
+}));
+
+export { useGameModeStore, useCustomGameStore, GameMode };
 
 // import { createContext, useContext } from 'react'
 // import { createStore, useStore as useZustandStore } from 'zustand'

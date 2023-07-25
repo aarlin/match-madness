@@ -36,11 +36,13 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 
 - [ ] Lives
 - [ ] Personal best
+- [ ] Time per match and average
 - [ ] Share custom with button & load from someone else's
 - [ ] Allow user to input their own json/csv to match against
 - [ ] Create leaderboard
 - [ ] Play against others like Typeracer
 - [ ] Play against your ghost like Monkeytype
+- [ ] Modal with kana <-> roumaji 
 
 ## Bugs
 
