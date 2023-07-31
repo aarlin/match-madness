@@ -9,7 +9,6 @@ export default function Home() {
           <div className="relative max-h-screen flex justify-center place-items-center">
             <MatchMadnessGame />
           </div>
-          <CustomGameModal />
         </main>
         <nav className="order-first w-32 p-4"></nav>
         <aside className="w-32  p-4"></aside>

@@ -6,11 +6,12 @@ import { normalDifficultyKatakana } from '../assets/normal/katakana';
 import { motion, useAnimationControls, useAnimation } from 'framer-motion';
 import { QueueConstants } from '@/app/constants/queue-constants';
 import { GameConstants } from '@/app/constants/game-constants';
-import { Queue, useQueue } from '@/lib/Queue';
+import { Queue, useQueue } from '@/utils/Queue';
 import { defaultComposer } from 'default-composer';
 import { gsap } from 'gsap';
 import useSound from 'use-sound';
-import { GameMode, useGameModeStore } from '@/lib/store';
+import { GameMode, useGameModeStore } from '@/utils/store';
+import GameReferenceModal from './GameReferenceModal';
 
 interface MatchingPair {
   kana: string;
@@ -304,6 +305,10 @@ export const MatchMadnessGame = () => {
                 Combo x{comboStreak}
               </motion.div>
             )}
+          </div>
+
+          <div className="col-span-2 flex justify-center items-center mb-4">
+            <GameReferenceModal/>
           </div>
 
           {/* Left Column */}

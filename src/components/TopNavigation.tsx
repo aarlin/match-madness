@@ -1,26 +1,35 @@
 'use client'
-import { GameMode, useCustomGameStore, useGameModeStore } from '../lib/store';
-import { redirect } from 'next/navigation';
+import { GameMode, useCustomGameStore, useGameModeStore } from '@/utils/store';
+import { useRouter } from 'next/navigation'
 
 export const TopNavigation = () => {
   const setGameMode = useGameModeStore((state) => state.setGameMode);
   const setShowModal = useCustomGameStore((state) => state.setShowModal);
+  const router = useRouter();
 
   return (
     <>
-      <button onClick={() => setGameMode(GameMode.HIRAGANA)}
-        className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded-lg">
+      <button
+        className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded-lg"
+        onClick={() => {
+          setGameMode(GameMode.HIRAGANA)
+          router.push('/');
+        }}>
         Hiragana
       </button>
-      <button onClick={() => setGameMode(GameMode.KATAKANA)}
-        className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded-lg">
+      <button
+        className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded-lg"
+        onClick={() => {
+          setGameMode(GameMode.KATAKANA)
+          router.push('/');
+        }}>
         Katakana
       </button>
       <button onClick={() => setShowModal(true)}
         className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded-lg">
         Custom Game
       </button>
-      <button onClick={() => redirect('/community')}
+      <button onClick={() => router.push('/community')}
         className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded-lg">
         Community
       </button>

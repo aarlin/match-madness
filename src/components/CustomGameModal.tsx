@@ -1,5 +1,5 @@
 'use client'
-import { useCustomGameStore } from "@/lib/store";
+import { useCustomGameStore } from "@/utils/store";
 import React from "react";
 import { useClickOutside } from '@mantine/hooks';
 import { useWindowEvent } from '@mantine/hooks';

@@ -4,6 +4,9 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import Image from 'next/image'
 import logo from '../../public/logo.svg';
+import Link from 'next/link';
+import { CustomGameModal } from '@/components/CustomGameModal'
+
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -19,11 +22,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="flex min-h-screen flex-col">
           <header className="p-4">
             <div className="z-10 w-full max-w-5l items-center justify-between font-mono text-sm lg:flex mb-25">
-              <Image
-                priority
-                src={logo}
-                alt="Match Madness"
-              />
+              <Link href="/">
+                  <Image
+                    priority
+                    src={logo}
+                    alt="Match Madness"
+
+                  />
+              </Link>
               <div
                 className="gap-2 p-8 lg:p-0 fixed bottom-0 left-0 flex h-48 w-full place-items-center justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
                 <TopNavigation />
@@ -31,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </header>
           {children}
+          <CustomGameModal />
           <footer className="bg-white rounded-lg shadow sm:flex sm:items-center sm:justify-between p-4 sm:p-6 xl:p-8 dark:bg-gray-800 fixed bottom-0 min-w-full">
             <p className="mb-4 text-sm text-center text-gray-500 dark:text-gray-400 sm:mb-0">
               &copy; 2023 <a href="https://github.com/brewing-cauldron/" className="hover:underline" target="_blank">Brewing Cauldron</a>. All rights reserved.
