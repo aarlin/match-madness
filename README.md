@@ -49,6 +49,9 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 
 [Flowbite](https://flowbite.com/docs/)
 
+
+[NextUI](https://nextui.org/docs)
+
 https://mynaui.com/
 
 https://merakiui.com/
